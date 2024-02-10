@@ -4,6 +4,7 @@
   "description": "Run MuJoCo simulations in browser",
   "main": "dist/mujoco_wasm.js",
   "directories": {
+    "example": "examples",
     "lib": "lib"
   },
   "scripts": {
@@ -24,6 +25,8 @@
   },
   "homepage": "https://github.com/zalo/mujoco_wasm#readme",
   "dependencies": {
+    "http-server": "^14.1.1",
     "three": "^0.150.1"
-  }
+  },
+  "types": "./dist/mujoco_wasm.d.ts"
 }

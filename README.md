@@ -20,6 +20,9 @@ Load and Run MuJoCo 2.3.1 Models using JavaScript and WebAssembly.
 
 This repo is a fork of @stillonearth 's starter repository, adding tons of functionality and a comprehensive example scene.
 
+For cloning additional assets (such as those in `menagerie`), use 
+`git clone --recursive ...` when cloning to include submodules
+
 ### [See the Live Demo Here](https://zalo.github.io/mujoco_wasm/)
 
 ### [See a more Advanced Example Here](https://kzakka.com/robopianist/)
@@ -64,6 +67,16 @@ let simulation  = new mujoco.Simulation(model, state);
 ```
 
 Typescript definitions are available.
+
+## Running website
+
+From the root directory, run 
+
+```shell
+$ npm init -y && npm install http-server && npx http-server .
+```
+
+to start the webserver.
 
 ## Work In Progress Disclaimer
 

@@ -56,7 +56,6 @@ public:
   int  nlight        () const { return m->nlight        ; }
   int  nmesh         () const { return m->nmesh         ; }
   int  nmeshvert     () const { return m->nmeshvert     ; }
-  int  nmeshtexvert  () const { return m->nmeshtexvert  ; }
   int  nmeshface     () const { return m->nmeshface     ; }
   int  nmeshgraph    () const { return m->nmeshgraph    ; }
   int  nskin         () const { return m->nskin         ; }
@@ -220,12 +219,12 @@ public:
   val  mesh_vertadr           () const { return val(typed_memory_view(m->nmesh           * 1        , m->mesh_vertadr           )); }
   val  mesh_vertnum           () const { return val(typed_memory_view(m->nmesh           * 1        , m->mesh_vertnum           )); }
   val  mesh_texcoordadr       () const { return val(typed_memory_view(m->nmesh           * 1        , m->mesh_texcoordadr       )); }
+  val  mesh_texcoord          () const { return val(typed_memory_view(m->nmesh           * 1        , m->mesh_texcoord          )); }
   val  mesh_faceadr           () const { return val(typed_memory_view(m->nmesh           * 1        , m->mesh_faceadr           )); }
   val  mesh_facenum           () const { return val(typed_memory_view(m->nmesh           * 1        , m->mesh_facenum           )); }
   val  mesh_graphadr          () const { return val(typed_memory_view(m->nmesh           * 1        , m->mesh_graphadr          )); }
   val  mesh_vert              () const { return val(typed_memory_view(m->nmeshvert       * 3        , m->mesh_vert              )); }
   val  mesh_normal            () const { return val(typed_memory_view(m->nmeshvert       * 3        , m->mesh_normal            )); }
-  val  mesh_texcoord          () const { return val(typed_memory_view(m->nmeshtexvert    * 2        , m->mesh_texcoord          )); }
   val  mesh_face              () const { return val(typed_memory_view(m->nmeshface       * 3        , m->mesh_face              )); }
   val  mesh_graph             () const { return val(typed_memory_view(m->nmeshgraph      * 1        , m->mesh_graph             )); }
   val  skin_matid             () const { return val(typed_memory_view(m->nskin           * 1        , m->skin_matid             )); }
@@ -968,7 +967,6 @@ EMSCRIPTEN_BINDINGS(mujoco_wasm) {
       .property("nlight"                , &Model::nlight                )
       .property("nmesh"                 , &Model::nmesh                 )
       .property("nmeshvert"             , &Model::nmeshvert             )
-      .property("nmeshtexvert"          , &Model::nmeshtexvert          )
       .property("nmeshface"             , &Model::nmeshface             )
       .property("nmeshgraph"            , &Model::nmeshgraph            )
       .property("nskin"                 , &Model::nskin                 )
@@ -1581,7 +1579,7 @@ EMSCRIPTEN_BINDINGS(mujoco_wasm) {
       .field("timeconst"  , &mjLROpt::timeconst)  // time constant for velocity reduction; min 0.01
       .field("timestep"   , &mjLROpt::timestep)   // simulation timestep; 0: use mjOption.timestep
       .field("inttotal"   , &mjLROpt::inttotal)   // total simulation time interval
-      .field("inteval"    , &mjLROpt::inteval)    // evaluation time interval (at the end)
+      .field("interval"    , &mjLROpt::interval)    // evaluation time interval (at the end)
       .field("tolrange"   , &mjLROpt::tolrange);  // convergence tolerance (relative to range)
 
   value_object<mjOption>("mjOption")
