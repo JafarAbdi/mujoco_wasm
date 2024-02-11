@@ -80,3 +80,4 @@ jspm_packages/
 #!node_modules/three/examples/jsm/loaders/*
 **.ipynb_checkpoints/*
 
+mujoco_wasm.code-workspace
