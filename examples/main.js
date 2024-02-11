@@ -92,6 +92,19 @@ export class MuJoCoDemo {
     this.renderer.setSize( window.innerWidth, window.innerHeight );
   }
 
+  applyPoseToRobot(bodyID, posX, posY, posZ, quatW, quatX, quatY, quatZ, paused) {
+    // Convert paused from boolean to int (0 or 1)
+    const pausedInt = paused ? 1 : 0;
+
+    // Call the applyPose function from the simulation object
+    this.simulation.applyPose(
+      bodyID,
+      posX, posY, posZ,
+      quatW, quatX, quatY, quatZ,
+      pausedInt
+    );
+  }
+
   render(timeMS) {
     this.controls.update();
 
