@@ -1,0 +1,166 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index aaac4e38..df302a57 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -117,7 +117,6 @@ target_link_options(
+ target_link_libraries(
+   mujoco
+   PRIVATE ccd
+-          lodepng
+           qhullstatic_r
+           tinyobjloader
+           tinyxml2
+diff --git a/src/engine/engine_util_errmem.c b/src/engine/engine_util_errmem.c
+index 7c63c1ce..e313b9a5 100644
+--- a/src/engine/engine_util_errmem.c
++++ b/src/engine/engine_util_errmem.c
+@@ -97,7 +97,7 @@ void mju_writeLog(const char* type, const char* msg) {
+     // get time
+     time(&rawtime);
+ 
+-#if defined(_POSIX_C_SOURCE) || defined(__APPLE__) || defined(__STDC_VERSION_TIME_H__)
++#if defined(_POSIX_C_SOURCE) || defined(__APPLE__) || defined(__EMSCRIPTEN__) || defined(__STDC_VERSION_TIME_H__)
+     localtime_r(&rawtime, &timeinfo);
+ #elif _MSC_VER
+     localtime_s(&timeinfo, &rawtime);
+diff --git a/src/user/user_objects.cc b/src/user/user_objects.cc
+index c96872f5..2380e014 100644
+--- a/src/user/user_objects.cc
++++ b/src/user/user_objects.cc
+@@ -34,7 +34,6 @@
+ #include <utility>
+ #include <vector>
+ 
+-#include "lodepng.h"
+ #include <mujoco/mjmodel.h>
+ #include <mujoco/mjplugin.h>
+ #include <mujoco/mjtnum.h>
+@@ -54,8 +53,6 @@ using mujoco::user::FilePath;
+ 
+ class PNGImage {
+  public:
+-  static PNGImage Load(const mjCBase* obj, mjResource* resource,
+-                       LodePNGColorType color_type);
+   int Width() const { return width_; }
+   int Height() const { return height_; }
+   uint8_t operator[] (int i) const { return data_[i]; }
+@@ -68,72 +65,9 @@ class PNGImage {
+ 
+   int width_;
+   int height_;
+-  LodePNGColorType color_type_;
+   std::vector<uint8_t> data_;
+ };
+ 
+-PNGImage PNGImage::Load(const mjCBase* obj, mjResource* resource,
+-                        LodePNGColorType color_type) {
+-  PNGImage image;
+-  image.color_type_ = color_type;
+-  mjCCache *cache = reinterpret_cast<mjCCache*>(mj_globalCache());
+-
+-  // try loading from cache
+-  if (cache && cache->PopulateData(resource, [&image](const void* data) {
+-    const PNGImage *cached_image = static_cast<const PNGImage*>(data);
+-    if (cached_image->color_type_ == image.color_type_) {
+-      image = *cached_image;
+-    }
+-  })) {
+-    if (!image.data_.empty()) return image;
+-  }
+-
+-  // open PNG resource
+-  const unsigned char* buffer;
+-  int nbuffer = mju_readResource(resource, (const void**) &buffer);
+-
+-  if (nbuffer < 0) {
+-    throw mjCError(obj, "could not read PNG file '%s'", resource->name);
+-  }
+-
+-  if (!nbuffer) {
+-    throw mjCError(obj, "empty PNG file '%s'", resource->name);
+-  }
+-
+-  // decode PNG from buffer
+-  unsigned int w, h;
+-  unsigned err = lodepng::decode(image.data_, w, h,
+-                                 buffer, nbuffer, image.color_type_, 8);
+-
+-  // check for errors
+-  if (err) {
+-    std::stringstream ss;
+-    ss << "error decoding PNG file '" << resource->name << "': " << lodepng_error_text(err);
+-    throw mjCError(obj, "%s", ss.str().c_str());
+-  }
+-
+-  image.width_ = w;
+-  image.height_ = h;
+-
+-  if (image.width_ <= 0 || image.height_ < 0) {
+-    std::stringstream ss;
+-    ss << "error decoding PNG file '" << resource->name << "': " << "dimensions are invalid";
+-    throw mjCError(obj, "%s", ss.str().c_str());
+-  }
+-
+-  // insert raw image data into cache
+-  if (cache) {
+-    PNGImage *cached_image = new PNGImage(image);;
+-    std::size_t size = image.Size();
+-    std::shared_ptr<const void> cached_data(cached_image, +[](const void* data) {
+-      delete static_cast<const PNGImage*>(data);
+-    });
+-    cache->Insert("", resource, cached_data, size);
+-  }
+-
+-  return image;
+-}
+-
+ // associate all child list elements with a frame and copy them to parent list, clear child list
+ template <typename T>
+ void MapFrame(std::vector<T*>& parent, std::vector<T*>& child,
+@@ -3593,20 +3527,7 @@ void mjCHField::LoadCustom(mjResource* resource) {
+ 
+ 
+ // load elevation data from PNG format
+-void mjCHField::LoadPNG(mjResource* resource) {
+-  PNGImage image = PNGImage::Load(this, resource, LCT_GREY);
+-
+-  ncol = image.Width();
+-  nrow = image.Height();
+-
+-  // copy image data over with rows reversed
+-  data.reserve(nrow * ncol);
+-  for (int r = 0; r < nrow; r++) {
+-    for (int c = 0; c < ncol; c++) {
+-      data.push_back((float) image[c + (nrow - 1 - r)*ncol]);
+-    }
+-  }
+-}
++void mjCHField::LoadPNG(mjResource* resource) {}
+ 
+ 
+ 
+@@ -4057,23 +3978,7 @@ void mjCTexture::BuiltinCube(void) {
+ // load PNG file
+ void mjCTexture::LoadPNG(mjResource* resource,
+                          std::vector<unsigned char>& image,
+-                         unsigned int& w, unsigned int& h) {
+-  LodePNGColorType color_type;
+-  if (nchannel == 4) {
+-    color_type = LCT_RGBA;
+-  } else if (nchannel == 3) {
+-    color_type = LCT_RGB;
+-  } else if (nchannel == 1) {
+-    color_type = LCT_GREY;
+-  } else {
+-    throw mjCError(this, "Unsupported number of channels: %s",
+-                   std::to_string(nchannel).c_str());
+-  }
+-  PNGImage png_image = PNGImage::Load(this, resource, color_type);
+-  w = png_image.Width();
+-  h = png_image.Height();
+-  image = png_image.MoveData();
+-}
++                         unsigned int& w, unsigned int& h) {}
+ 
+ // load custom file
+ void mjCTexture::LoadCustom(mjResource* resource,

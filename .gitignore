@@ -81,3 +81,7 @@ jspm_packages/
 **.ipynb_checkpoints/*
 
 mujoco_wasm.code-workspace
+
+# pixi environments
+.pixi
+*.egg-info

@@ -1,19 +1,16 @@
-cmake_minimum_required(VERSION 3.2)
-option(JS_ONLY "Compiles to native JS (No WASM)" OFF)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/dist")
+cmake_minimum_required(VERSION 3.28)
+project(mujoco_wasm LANGUAGES CXX)
 
-project(mujoco_wasm)
+add_subdirectory(dependencies)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3")
+set(EMCC_LINKER_FLAGS
+    "-s ASSERTIONS=1 --bind -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_ES6=1 -s MODULARIZE=1 -s FORCE_FILESYSTEM=1 -s EXPORTED_RUNTIME_METHODS=['FS','MEMFS'] -s EXPORT_NAME=load_mujoco -s EXCEPTION_CATCHING_ALLOWED=['load_from_xml']"
+)
 
-set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
+add_executable(mujoco_wasm src/main.genned.cc)
+target_sources(mujoco_wasm PRIVATE src/main.genned.cc)
+target_compile_features(mujoco_wasm PRIVATE cxx_std_20)
+set_target_properties(mujoco_wasm PROPERTIES LINK_FLAGS "${EMCC_LINKER_FLAGS}")
+target_link_libraries(mujoco_wasm PRIVATE mujoco)
 
-set(MUJOCO_INSTALL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
-set(MUJOCO_INSTALL_BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
-set(MUJOCO_INSTALL_LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
-
-include_directories(${MUJOCO_INSTALL_INCLUDE_DIR})
-link_directories(${MUJOCO_INSTALL_LIB_DIR})
-
-add_subdirectory(src)
+install(TARGETS mujoco_wasm DESTINATION ${CMAKE_SOURCE_DIR}/dist)
