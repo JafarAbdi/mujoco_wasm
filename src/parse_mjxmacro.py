@@ -1,5 +1,6 @@
 import sys
 import os
+import pathlib
 
 if len(sys.argv) != 2:
     print("Usage: python parse_mjxmacro.py <path_to_mujoco>")
@@ -355,5 +356,8 @@ with open("src/mujoco_wasm.template.d.ts") as f:
     content = content.replace(
         "// ENUMS", "// ENUMS\n" + "\n".join(auto_gen_lines["enums_typescript"])
     )
-    with open("dist/mujoco_wasm.d.ts", mode="w") as f:
+    file = pathlib.Path("dist/mujoco_wasm.d.ts")
+    # Make sure parent directory exists
+    file.parent.mkdir(exist_ok=True)
+    with file.open(mode="w") as f:
         f.write(content)

@@ -33,3 +33,9 @@ FetchContent_Declare(
   EXCLUDE_FROM_ALL
   PATCH_COMMAND git apply ${CMAKE_SOURCE_DIR}/dependencies/patches/mujoco.patch)
 FetchContent_MakeAvailable(mujoco)
+
+find_package(Python3 REQUIRED)
+execute_process(
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/parse_mjxmacro.py
+          ${mujoco_SOURCE_DIR} RESULT_VARIABLE result)
+

@@ -158,8 +158,6 @@ int main(int argc, char **argv) {
 EMSCRIPTEN_BINDINGS(mujoco_wasm) {
 
   // MODEL_ENUMS
-
-
   class_<Model>("Model")
       .constructor<>(&Model::load_from_xml)
       .class_function("load_from_xml", &Model::load_from_xml)

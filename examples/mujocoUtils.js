@@ -403,14 +403,14 @@ export async function loadSceneFromURL(mujoco, filename, parent) {
           model.mat_rgba[(matId * 4) + 2],
           model.mat_rgba[(matId * 4) + 3]];
 
-        // Construct Texture from model.tex_rgb
+        // Construct Texture from model.tex_data
         texture = undefined;
         let texId = model.mat_texid[matId];
         if (texId != -1) {
           let width    = model.tex_width [texId];
           let height   = model.tex_height[texId];
           let offset   = model.tex_adr   [texId];
-          let rgbArray = model.tex_rgb   ;
+          let rgbArray = model.tex_data   ;
           let rgbaArray = new Uint8Array(width * height * 4);
           for (let p = 0; p < width * height; p++){
             rgbaArray[(p * 4) + 0] = rgbArray[offset + ((p * 3) + 0)];
