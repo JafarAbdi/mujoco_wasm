@@ -18,14 +18,7 @@ configure = { cmd = [
   "-B",
   "build/",
 ] }
-generate-templates = { cmd = [
-  "python",
-  "src/parse_mjxmacro.py",
-  "build/_deps/mujoco-src",
-], depends-on = [
-  "configure",
-] }
-build = { cmd = "cmake --build build/", depends-on = ["generate-templates"] }
+build = { cmd = "cmake --build build/", depends-on = ["configure"] }
 install = { cmd = "cmake --install build/", depends-on = ["build"] }
 
 [dependencies]

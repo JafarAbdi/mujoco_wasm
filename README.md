@@ -16,9 +16,9 @@
 
 ## The Power of MuJoCo in your Browser.
 
-Load and Run MuJoCo 2.3.1 Models using JavaScript and WebAssembly.
+Load and Run MuJoCo 3.2.7 Models using JavaScript and WebAssembly.
 
-This repo is a fork of @stillonearth 's starter repository, adding tons of functionality and a comprehensive example scene.
+This repo is a fork of https://github.com/krishpop/mujoco_wasm.
 
 For cloning additional assets (such as those in `menagerie`), use 
 `git clone --recursive ...` when cloning to include submodules
@@ -29,23 +29,11 @@ For cloning additional assets (such as those in `menagerie`), use
 
 ## Building
 
-**1. Install emscripten**
+This repo uses [pixi](https://pixi.sh/latest/). Make sure it's install before proceeding.
 
-**2. Build the mujoco_wasm Binary**
-
-On Linux, use:
 ```bash
-mkdir build
-cd build
-emcmake cmake ..
-make
+pixi run install
 ```
-
-On Windows, run `build_windows.bat`.
-
-*3. (Optional) Update MuJoCo libs*
-
-Build MuJoCo libs with wasm target and place to lib. Currently v2.3.1 included.
 
 ## JavaScript API
 
@@ -74,6 +62,12 @@ From the root directory, run
 
 ```shell
 $ npm init -y && npm install http-server && npx http-server .
+```
+
+Or with [bun](https://bun.sh/)
+
+```bash
+bunx http-server .
 ```
 
 to start the webserver.
