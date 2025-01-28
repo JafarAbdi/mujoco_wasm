@@ -85,3 +85,5 @@ mujoco_wasm.code-workspace
 # pixi environments
 .pixi
 *.egg-info
+
+dist/
