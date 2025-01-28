@@ -31,13 +31,14 @@ types_to_array_types = {
 
 
 def parse_pointer_line(
+    prefix: str,
     line: str,
     header_lines: list[str],
     mj_definitions: list[str],
     emscripten_bindings: list[str],
     typescript_definitions: list[str],
 ):
-    elements = line.strip("    X(").split(""")""")[0].strip().split(",")
+    elements = line.strip(f"    {prefix}").split(""")""")[0].strip().split(",")
     elements = [e.strip() for e in elements]
 
     model_ptr = "m" if parse_mode[1] == "model" else "_model->ptr()"
@@ -92,13 +93,14 @@ def parse_pointer_line(
 
 
 def parse_int_line(
+    prefix: str,
     line: str,
     header_lines: list[str],
     mj_definitions: list[str],
     emscripten_bindings: list[str],
     typescript_definitions: list[str],
 ):
-    name = line.strip("    X(").split(""")""")[0].strip()
+    name = line.strip(f"    {prefix}").split(""")""")[0].strip()
     mj_definitions.append(
         "  int  " + name.ljust(14) + "() const { return m->" + name.ljust(14) + "; }"
     )
@@ -136,27 +138,35 @@ with open(f"{mujoco_path}/include/mujoco/mjxmacro.h") as f:
     for line in lines:
         if parse_mode[0] != None:
             if parse_mode[0] == "pointers":
-                if line.strip().startswith("X("):
-                    parse_pointer_line(
-                        line,
-                        model_lines if parse_mode[1] == "model" else data_lines,
-                        auto_gen_lines[parse_mode[1] + "_definitions"],
-                        auto_gen_lines[parse_mode[1] + "_bindings"],
-                        auto_gen_lines[parse_mode[1] + "_typescript"],
-                    )
-                else:
+                prefixes = ["X   (", "XMJV(", "XNV ("]
+                for prefix in prefixes:
+                    if line.strip().startswith(prefix):
+                        parse_pointer_line(
+                            prefix,
+                            line,
+                            model_lines if parse_mode[1] == "model" else data_lines,
+                            auto_gen_lines[parse_mode[1] + "_definitions"],
+                            auto_gen_lines[parse_mode[1] + "_bindings"],
+                            auto_gen_lines[parse_mode[1] + "_typescript"],
+                        )
+                # If we didn't find a prefix, we're done parsing pointers
+                if all([not line.strip().startswith(prefix) for prefix in prefixes]):
                     parse_mode = (None, None)
 
             if parse_mode[0] == "ints":
-                if line.strip().startswith("X("):
-                    parse_int_line(
-                        line,
-                        model_lines if parse_mode[1] == "model" else data_lines,
-                        auto_gen_lines[parse_mode[1] + "_definitions"],
-                        auto_gen_lines[parse_mode[1] + "_bindings"],
-                        auto_gen_lines[parse_mode[1] + "_typescript"],
-                    )
-                else:
+                prefixes = ["X   (", "XMJV(", "XNV ("]
+                for prefix in prefixes:
+                    if line.strip().startswith(prefix):
+                        parse_int_line(
+                            prefix,
+                            line,
+                            model_lines if parse_mode[1] == "model" else data_lines,
+                            auto_gen_lines[parse_mode[1] + "_definitions"],
+                            auto_gen_lines[parse_mode[1] + "_bindings"],
+                            auto_gen_lines[parse_mode[1] + "_typescript"],
+                        )
+                # If we didn't find a prefix, we're done parsing pointers
+                if all([not line.strip().startswith(prefix) for prefix in prefixes]):
                     parse_mode = (None, None)
 
         if "#define MJMODEL_INTS" in line:
@@ -169,7 +179,6 @@ with open(f"{mujoco_path}/include/mujoco/mjxmacro.h") as f:
 import functions
 
 for function in functions.FUNCTIONS:
-    # print("Function:", function)
     param_types = [param.decltype for param in functions.FUNCTIONS[function].parameters]
     name = function[3:] if function != "mj_crb" else function[3:] + "Calculate"
     function_def = "  void " + name.ljust(22) + "() { " + function.ljust(28) + "("
