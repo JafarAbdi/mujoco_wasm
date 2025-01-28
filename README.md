@@ -67,6 +67,7 @@ $ npm init -y && npm install http-server && npx http-server .
 Or with [bun](https://bun.sh/)
 
 ```bash
+bun install
 bunx http-server .
 ```
 
