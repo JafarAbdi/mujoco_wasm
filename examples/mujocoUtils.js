@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Reflector  } from './utils/Reflector.js';
 import { MuJoCoDemo } from './main.js';
+import * as mujoco from '../dist/mujoco_wasm.js';
 
 export async function reloadFunc() {
   // Delete the old scene and load the new scene
@@ -405,7 +406,8 @@ export async function loadSceneFromURL(mujoco, filename, parent) {
 
         // Construct Texture from model.tex_data
         texture = undefined;
-        let texId = model.mat_texid[matId];
+        let texIndex = matId * mujoco.mjtTextureRole.mjNTEXROLE.value;
+        let texId = model.mat_texid[texIndex + mujoco.mjtTextureRole.mjTEXROLE_RGB.value];
         if (texId != -1) {
           let width    = model.tex_width [texId];
           let height   = model.tex_height[texId];
